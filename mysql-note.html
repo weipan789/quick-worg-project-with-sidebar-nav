@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>mysql-note</title>
+<!-- 2017-07-16 日 09:43 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="wp" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" type="text/css" href="css/worg.css"/>
+
+<link rel="stylesheet" type="text/css" href="css/main.css"/>
+<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="index.html"> UP </a>
+ |
+ <a accesskey="H" href=""> HOME </a>
+</div>
+<div id="content">
+<h1 class="title">mysql-note</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Mysql Document</a></li>
+<li><a href="#sec-2">2. 安装之后</a></li>
+<li><a href="#sec-3">3. 查询所有表</a></li>
+<li><a href="#sec-4">4. 查询所有视图</a></li>
+<li><a href="#sec-5">5. 查看所有函数</a></li>
+<li><a href="#sec-6">6. 查询所有存储过程</a></li>
+<li><a href="#sec-7">7. 查询所有触发器</a></li>
+<li><a href="#sec-8">8. 创建触发器</a>
+<ul>
+<li><a href="#sec-8-1">8.1. 语法</a></li>
+</ul>
+</li>
+<li><a href="#sec-9">9. 删除触发器</a></li>
+<li><a href="#sec-10">10. 储存过程for</a></li>
+<li><a href="#sec-11">11. mysqldump: Error: Binlogging on server not active</a></li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Mysql Document</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="https://dev.mysql.com/doc/refman/5.7/en/">https://dev.mysql.com/doc/refman/5.7/en/</a>
+</p>
+
+<p>
+<a href="https://dev.mysql.com/doc/refman/5.7/en/sql-syntax-data-definition.html">https://dev.mysql.com/doc/refman/5.7/en/sql-syntax-data-definition.html</a>
+</p>
+
+<p>
+如何打开MySQL中root账户的远程登录
+</p>
+
+<p>
+安装完成mysql数据，也不想创建其他用户了，直接用root吧，可是其他机器无法远程访问
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-mysql">GRANT ALL PRIVILEGES ON *.* TO root@"%" IDENTIFIED BY "root";
+flush privileges;
+</pre>
+</div>
+<p>
+第一句中"%"表示任何主机都可以远程登录到该服务器上访问。如果要限制只有某台机器可以访问，将其换成相应的IP即可，如：
+GRANT ALL PRIVILEGES ON <b>.</b> TO root@"172.168.193.25" IDENTIFIED BY "root";
+第二句表示从mysql数据库的grant表中重新加载权限数据。因为MySQL把权限都放在了cache中，所以在做完更改后需要重新加载。
+</p>
+
+<pre class="example">
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      -
+</pre>
+<p>
+可以看到绑定的地址为127.0.0.1。正常应该是0.0.0.0
+修改/etc/mysql/my.cnf，需要root用户权限。找到文件中的：
+</p>
+<pre class="example">
+bind-address          = 127.0.0.1
+</pre>
+<pre class="example">
+tcp        0      0 0.0.0.0:3306            0.0.0.0:*               LISTEN      -
+tcp        0      0 192.168.1.105:3306      192.168.1.100:51240     ESTABLISHED -
+</pre>
+
+
+
+<div class="org-src-container">
+
+<pre class="src src-mysql">mysql&gt; select version(),current_date;
+select version(),current_date;
++-----------+--------------+
+| version() | current_date |
++-----------+--------------+
+| 5.7.13    | 2017-02-26   |
++-----------+--------------+
+1 row in set (0.02 sec)
+</pre>
+</div>
+
+
+
+<p>
+mysql创建数据库指定字符集
+</p>
+
+<pre class="example">
+GBK: create database test2 DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;
+
+UTF8: CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+</pre>
+
+
+
+<div class="org-src-container">
+
+<pre class="src src-mysql"> mysql -u root -p
+SOURCE C:/temp/sakila-db/sakila-schema.sql;
+SOURCE C:/temp/sakila-db/sakila-data.sql;
+</pre>
+</div>
+
+
+
+<div class="org-src-container">
+
+<pre class="src src-mysql">CREATE DATABASE menagerie;
+GRANT ALL ON menagerie.* TO 'your_mysql_name'@'your_client_host';
+GRANT ALL ON sakila.* TO 'hvitssm'@'%';
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> 安装之后</h2>
+<div class="outline-text-2" id="text-2">
+<div class="org-src-container">
+
+<pre class="src src-sh"><span style="color: #99968b;">#</span><span style="color: #99968b;">&#20197;root&#36523;&#20221;&#22312;&#32456;&#31471;&#30331;&#38470;&#65292;&#24517;&#39035;</span>
+mysqladmin -u root -p password root
+</pre>
+</div>
+<p>
+如果是mariadb,创建其他用户，并使用其他用户登陆
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> 查询所有表</h2>
+<div class="outline-text-2" id="text-3">
+<pre class="example">
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE ='BASE TABLE';
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> 查询所有视图</h2>
+<div class="outline-text-2" id="text-4">
+<pre class="example">
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE ='VIEW';
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> 查看所有函数</h2>
+<div class="outline-text-2" id="text-5">
+<pre class="example">
+SELECT name from mysql.proc where type='function';
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> 查询所有存储过程</h2>
+<div class="outline-text-2" id="text-6">
+<pre class="example">
+SELECT name from mysql.proc where  type='procedure'
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> 查询所有触发器</h2>
+<div class="outline-text-2" id="text-7">
+<pre class="example">
+SELECT * FROM information_schema.`TRIGGERS`;
+select trigger_name from  information_schema.`TRIGGERS`;
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> 创建触发器</h2>
+<div class="outline-text-2" id="text-8">
+</div><div id="outline-container-sec-8-1" class="outline-3">
+<h3 id="sec-8-1"><span class="section-number-3">8.1</span> 语法</h3>
+<div class="outline-text-3" id="text-8-1">
+<pre class="example">
+CREATE
+    [DEFINER = { user | CURRENT_USER }]
+    TRIGGER trigger_name
+    trigger_time trigger_event
+    ON tbl_name FOR EACH ROW
+    [trigger_order]
+    trigger_body
+
+trigger_time: { BEFORE | AFTER }
+
+trigger_event: { INSERT | UPDATE | DELETE }
+
+trigger_order: { FOLLOWS | PRECEDES } other_trigger_name
+</pre>
+
+
+<pre class="example">
+CREATE TABLE account (acct_num INT, amount DECIMAL(10,2));
+CREATE TRIGGER ins_sum BEFORE INSERT ON account
+    FOR EACH ROW SET @sum = @sum + NEW.amount;
+</pre>
+
+<pre class="example">
+mysql&gt; SET @sum = 0;
+mysql&gt; INSERT INTO account VALUES(137,14.98),(141,1937.50),(97,-100.00);
+mysql&gt; SELECT @sum AS 'Total amount inserted';
++-----------------------+
+| Total amount inserted |
++-----------------------+
+| 1852.48               |
++-----------------------+
+</pre>
+
+<pre class="example">
+mysql&gt; CREATE TRIGGER ins_transaction BEFORE INSERT ON account
+    -&gt; FOR EACH ROW PRECEDES ins_sum
+    -&gt; SET
+    -&gt; @deposits = @deposits + IF(NEW.amount&gt;0,NEW.amount,0),
+    -&gt; @withdrawals = @withdrawals + IF(NEW.amount&lt;0,-NEW.amount,0);
+Query OK, 0 rows affected (0.02 sec)
+</pre>
+
+<pre class="example">
+mysql&gt; delimiter //
+mysql&gt; CREATE TRIGGER upd_check BEFORE UPDATE ON account
+    -&gt; FOR EACH ROW
+    -&gt; BEGIN
+    -&gt;     IF NEW.amount &lt; 0 THEN
+    -&gt;         SET NEW.amount = 0;
+    -&gt;     ELSEIF NEW.amount &gt; 100 THEN
+    -&gt;         SET NEW.amount = 100;
+    -&gt;     END IF;
+    -&gt; END;//
+mysql&gt; delimiter ;
+</pre>
+
+<pre class="example">
+CREATE TABLE test1(a1 INT);
+CREATE TABLE test2(a2 INT);
+CREATE TABLE test3(a3 INT NOT NULL AUTO_INCREMENT PRIMARY KEY);
+CREATE TABLE test4(
+  a4 INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  b4 INT DEFAULT 0
+);
+
+delimiter |
+
+CREATE TRIGGER testref BEFORE INSERT ON test1
+  FOR EACH ROW
+  BEGIN
+    INSERT INTO test2 SET a2 = NEW.a1;
+    DELETE FROM test3 WHERE a3 = NEW.a1;
+    UPDATE test4 SET b4 = b4 + 1 WHERE a4 = NEW.a1;
+  END;
+|
+
+delimiter ;
+
+INSERT INTO test3 (a3) VALUES
+  (NULL), (NULL), (NULL), (NULL), (NULL),
+  (NULL), (NULL), (NULL), (NULL), (NULL);
+
+INSERT INTO test4 (a4) VALUES
+  (0), (0), (0), (0), (0), (0), (0), (0), (0), (0);
+</pre>
+
+<pre class="example">
+INSERT INTO test1 VALUES  (1), (3), (1), (7), (1), (8), (4), (4);
+SELECT * FROM test1;
+SELECT * FROM test2
+SELECT * FROM test3;
+SELECT * FROM test4;
+</pre>
+
+<p>
+pointinfo 表结构
+</p>
+<pre class="example">
+desc pointinfo;
++----------------+-------------+------+-----+---------+-------+
+| Field          | Type        | Null | Key | Default | Extra |
++----------------+-------------+------+-----+---------+-------+
+| POINTID        | text        | YES  |     | NULL    |       |
+| EARTHID        | text        | YES  |     | NULL    |       |
+| POINTLOCATION  | text        | YES  |     | NULL    |       |
+| POINTLON       | double      | YES  |     | NULL    |       |
+| POINTLAT       | double      | YES  |     | NULL    |       |
+| POINTNAME      | varchar(50) | YES  |     | NULL    |       |
+| POINTTIME      | datetime    | YES  |     | NULL    |       |
+| POINTGROUP     | varchar(50) | YES  |     | NULL    |       |
+| POINTPERSON    | varchar(50) | YES  |     | NULL    |       |
+| POINTINTENSITY | varchar(5)  | YES  |     | NULL    |       |
+| POINTCONTENT   | text        | YES  |     | NULL    |       |
+| MSGTEL         | varchar(11) | YES  |     | NULL    |       |
+| MSGCONTENT     | text        | YES  |     | NULL    |       |
++----------------+-------------+------+-----+---------+-------+
+13 rows in set (0.01 sec)
+</pre>
+<p>
+elt日志表
+</p>
+<pre class="example">
+CREATE TABLE etllog(etllog_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+table_name text,
+table_id text,
+table_action int);
+</pre>
+<p>
+对于pointinfo表，创建触发器
+</p>
+
+<p>
+mysql -uroot -h192.168.3.180 -Ddb20170303 -p
+</p>
+
+<pre class="example">
+delimiter //
+CREATE TRIGGER tbi_pointinfo BEFORE INSERT ON pointinfo
+  FOR EACH ROW
+  BEGIN
+    insert into etllog(table_name,table_id,table_action)
+     values('pointinfo',new.pointid,1);
+  END;//
+delimiter ;;
+
+insert into pointinfo(pointid,pointlocation) values('TTest001','这是一个测试地址');
+</pre>
+
+<pre class="example">
+delimiter //
+CREATE TRIGGER tbu_pointinfo BEFORE update ON pointinfo
+  FOR EACH ROW
+  BEGIN
+    insert into etllog(table_name,table_id,table_action)
+     values('pointinfo',old.pointid,2);
+  END;//
+delimiter ;
+
+insert into pointinfo(pointid,pointlocation) values('TTest002','这是一个测试地址');
+update pointinfo set pointlocation='这是另一个测试' where pointid='TTest002';
+</pre>
+
+<pre class="example">
+delimiter //
+CREATE TRIGGER tbd_pointinfo BEFORE delete ON pointinfo
+  FOR EACH ROW
+  BEGIN
+    insert into etllog(table_name,table_id,table_action)
+     values('pointinfo',old.pointid,-1);
+  END;//
+delimiter ;;
+
+
+insert into pointinfo(pointid,pointlocation) values('DTTest003','这是一个测试地址');
+delete from  pointinfo where pointid='DTTest003';
+</pre>
+
+
+<pre class="example">
+delete from pointinfo where pointid like '%Test%';
+delete from etllog;
+insert into pointinfo(pointid,pointlocation) values('TTest001','这是一个测试地址');
+insert into pointinfo(pointid,pointlocation) values('TTest002','这是一个测试地址');
+update pointinfo set pointlocation='这是另一个测试' where pointid='TTest002';
+insert into pointinfo(pointid,pointlocation) values('DTTest003','这是一个测试地址');
+delete from  pointinfo where pointid='DTTest003';
+select * from etllog;
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> 删除触发器</h2>
+<div class="outline-text-2" id="text-9">
+<pre class="example">
+DROP TRIGGER [IF EXISTS] [schema_name.]trigger_name
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> 储存过程for</h2>
+<div class="outline-text-2" id="text-10">
+<div class="org-src-container">
+
+<pre class="src src-sql">       <span style="color: #8ac6f2; font-weight: bold;">Table</span>: film
+<span style="color: #8ac6f2; font-weight: bold;">Create</span> <span style="color: #8ac6f2; font-weight: bold;">Table</span>: <span style="color: #8ac6f2; font-weight: bold;">CREATE</span> <span style="color: #8ac6f2; font-weight: bold;">TABLE</span> `film` <span style="color: #8c8c8c;">(</span>
+  `film_id` <span style="color: #92a65e; font-weight: bold;">int</span><span style="color: #93a8c6;">(</span>11<span style="color: #93a8c6;">)</span> <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span> AUTO_INCREMENT,
+  `title` <span style="color: #92a65e; font-weight: bold;">varchar</span><span style="color: #93a8c6;">(</span>255<span style="color: #93a8c6;">)</span> <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span>,
+  `description` text,
+  `release_year` <span style="color: #8ac6f2; font-weight: bold;">year</span><span style="color: #93a8c6;">(</span>4<span style="color: #93a8c6;">)</span> <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span>,
+  `language_id` tinyint<span style="color: #93a8c6;">(</span>3<span style="color: #93a8c6;">)</span> unsigned <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span>,
+  `original_language_id` tinyint<span style="color: #93a8c6;">(</span>3<span style="color: #93a8c6;">)</span> unsigned <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span>,
+  `rental_duration` tinyint<span style="color: #93a8c6;">(</span>3<span style="color: #93a8c6;">)</span> unsigned <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span> <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> <span style="color: #95e454;">'3'</span>,
+  `rental_rate` <span style="color: #92a65e; font-weight: bold;">decimal</span><span style="color: #93a8c6;">(</span>4,2<span style="color: #93a8c6;">)</span> <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span> <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> <span style="color: #95e454;">'4.99'</span>,
+  `last_update` <span style="color: #92a65e; font-weight: bold;">timestamp</span> <span style="color: #8ac6f2; font-weight: bold;">NOT</span> <span style="color: #8ac6f2; font-weight: bold;">NULL</span> <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> <span style="color: #e5786d;">CURRENT_TIMESTAMP</span> <span style="color: #8ac6f2; font-weight: bold;">ON</span> <span style="color: #8ac6f2; font-weight: bold;">UPDATE</span> <span style="color: #e5786d;">CURRENT_TIMESTAMP</span>,
+  `zd01` text,
+  `zd02` text,
+  `zd03` text,
+  `zd04` text,
+  `zd05` text,
+  `zd06` text,
+  `zd08` text,
+  `zd09` text,
+  `zd07` text,
+  `zd10` text,
+  `zd11` text,
+  `zd12` text,
+  `zd13` text,
+  `zd14` text,
+  `zd15` text,
+  `zd16` text,
+  `zd17` text,
+  `zd18` text,
+  `zd19` text,
+  `zd20` text,
+  <span style="color: #8ac6f2; font-weight: bold;">PRIMARY</span> <span style="color: #8ac6f2; font-weight: bold;">KEY</span> <span style="color: #93a8c6;">(</span>`film_id`<span style="color: #93a8c6;">)</span>
+<span style="color: #8c8c8c;">)</span> ENGINE=InnoDB AUTO_INCREMENT=75536 <span style="color: #8ac6f2; font-weight: bold;">DEFAULT</span> CHARSET=utf8;
+</pre>
+</div>
+<pre class="example">
+drop procedure if exists p_for_loop;
+DELIMITER &amp;&amp;
+
+create procedure p_for_loop()
+begin
+    declare i int;
+        set i = 1;
+        loop_example : loop
+            select concat('index -&gt; ', i);
+insert into film(title,description,zd01,zd02,zd03,zd04,zd05,zd06,zd07,zd08,zd09,zd10,zd11,zd12,zd13,zd14,zd15,zd16,zd17,zd18,zd19,zd20)
+values('测试速度'||i,concat('测试速度',i),'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i,'测试速度'||i);
+            set i = i + 1;
+            if i &gt; 10000 then
+                leave loop_example;
+            end if;
+        end loop;
+end &amp;&amp;
+
+DELIMITER ;
+call p_for_loop();
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11"><span class="section-number-2">11</span> mysqldump: Error: Binlogging on server not active</h2>
+<div class="outline-text-2" id="text-11">
+<pre class="example">
+log_bin=mysql-bin
+server-id    = 1
+</pre>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: wp</p>
+<p class="date">Created: 2017-07-16 日 09:43</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
