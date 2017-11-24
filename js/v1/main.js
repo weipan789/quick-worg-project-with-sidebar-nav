@@ -40,6 +40,27 @@ $(function () {
         event.stopPropagation();    //  阻止事件冒泡
     });
 
+    var lastSelectedMenuOptId=undefined;
+    var optId=1;
+    //折叠一级标题
+    $sidebarNav.children().children().bind('click',function () {
+        var me = $(this);
+        var $ulEle = me.children('ul');
+        if(me.attr('optId')==undefined) {
+            me.attr('optId', optId++);
+        }
+        var myOptId=me.attr('optId');
+        if(lastSelectedMenuOptId!=myOptId){
+            lastSelectedMenuOptId=myOptId;
+            return;
+        }
+        if($ulEle.is(':hidden')){
+            $ulEle.show('slow');
+        }else{
+            $ulEle.hide('slow');
+        }
+    });
+
     //标题
     $tableOfContents.children().first().text($('#content').children().first().text());
 
