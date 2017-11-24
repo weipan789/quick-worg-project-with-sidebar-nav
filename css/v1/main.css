@@ -32,6 +32,12 @@ color: #232121;
 top: 6em;
 }
 
+pre.example {
+    background-color: #1e3436;
+    color: #eeeeec;
+}
+
+
 #main-content {
     padding-top: 60px;
     top: 0;
