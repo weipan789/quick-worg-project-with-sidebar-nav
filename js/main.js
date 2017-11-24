@@ -1,8 +1,8 @@
 $(function () {
     var $sidebarToggle=$('<button id="sidebar-toggle" class="sidebar-toggle"><div class="sidebar-toggle-button"><span></span><span></span><span></span></div></button>');
     $('body').append($sidebarToggle);
-    $sidebarToggleButton = $sidebarToggle.find('.sidebar-toggle-button');
-    var $tableOfContents=$('#table-of-contents');
+    var $sidebarToggleButton = $sidebarToggle.find('.sidebar-toggle-button');
+    $tableOfContents=$('#table-of-contents');
     $tableOfContents.addClass('sidebar').prependTo($('body'));
     var $sidebarNav = $('#text-table-of-contents');
     $sidebarNav.addClass('sidebar-nav');
@@ -39,6 +39,8 @@ $(function () {
         $(this).addClass('active');
     });
 
+    //标题
+    $tableOfContents.children().first().text($('#content').children().first().text());
 
     // the end
 })

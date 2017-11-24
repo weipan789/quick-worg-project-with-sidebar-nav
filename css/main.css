@@ -87,6 +87,9 @@ body.close .sidebar-toggle {
     width: 16px;
     height: 2px;
 }
+.sidebar-toggle-button,.sidebar-toggle span{
+    cursor: pointer;
+}
 .sidebar>h1 {
     margin: 0 auto 16px;
     margin: 0 auto 1rem;
