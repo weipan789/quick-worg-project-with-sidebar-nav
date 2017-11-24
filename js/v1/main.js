@@ -21,7 +21,7 @@ $(function () {
     });
 
     //显示与隐藏
-    $sidebarToggleButton.bind('click',function () {
+    $sidebarToggleButton.bind('click',function (event) {
         if($tableOfContents.is(":hidden")) {
             $tableOfContents.show();
             $mainContent.css('left','300px');
@@ -37,6 +37,7 @@ $(function () {
     $sidebarNav.find('li').bind('click',function () {
         $sidebarNav.find('li').removeClass('active');
         $(this).addClass('active');
+        event.stopPropagation();    //  阻止事件冒泡
     });
 
     //标题
