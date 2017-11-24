@@ -1,7 +1,7 @@
 html {
     margin: 0;
     font: .9em/1.6em "Droid Serif", Cambria, Georgia, "DejaVu Serif", serif;
-    background-image: url(bg.png);
+    background-image: url(v1/bg.png);
     background-repeat: repeat;
 }
 body #content,#postamble {
