@@ -62,7 +62,9 @@ $(function () {
     });
 
     //标题
-    $tableOfContents.children().first().text($('#content').children().first().text());
+    var $title=$('#content').children().first();
+    $tableOfContents.children().first().text($title.text());
+    $title.remove();
 
     // the end
 })
